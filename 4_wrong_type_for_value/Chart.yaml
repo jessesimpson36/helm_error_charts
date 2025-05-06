@@ -1,0 +1,4 @@
+apiVersion: v2
+name: wrong_type
+version: 0.0.1
+

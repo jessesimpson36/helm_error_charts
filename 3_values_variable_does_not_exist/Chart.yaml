@@ -1,0 +1,4 @@
+apiVersion: v2
+name: values_variable_doesnt_exist
+version: 0.0.1
+
