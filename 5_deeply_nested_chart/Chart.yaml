@@ -1,0 +1,7 @@
+apiVersion: v2
+name: function_not_found_nested
+version: 0.0.1
+dependencies:
+  - name: common
+    version: 0.1.0
+
