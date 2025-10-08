@@ -1,0 +1,14 @@
+
+name: |
+  {{- define "jesseNameForgetterRememberer" -}}
+    {{- include "jesseIsThinking" . -}}
+  {{- end -}}
+  {{ include "jesseNameForgetterRememberer" . }}
+  {{- include "triggerError" . -}}
+
+pizzaToppings:
+  - mushrooms
+  - cheese
+  - peppers
+  - onions
+  - pineapple
