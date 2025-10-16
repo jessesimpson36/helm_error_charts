@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: example
+  name: example
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: example
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: example
+    spec:
+      containers:
+      - image: alpine:latest
+        name: alpine
+        resources: {}
+        env:
+          {{- if not .Values.drift_enabled }}
+          - name: EXAMPLE_ENV
+            value: "example_value"
+          {{- end }}
+          {{- if .Values.drift_enabled }}
+          - name: JESSE_LIKES_CHEESE
+            value: "true"
+          {{- end }}
+          - name: EXAMPLE_ENV_2
+            value: "example_value"
+          {{- if .Values.drift_enabled }}
+          - name: EXAMPLE_ENV
+            value: "true"
+          {{- end }}
+
+status: {}
