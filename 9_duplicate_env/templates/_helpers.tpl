@@ -60,3 +60,67 @@ Create the name of the service account to use
 {{- default "default" .Values.serviceAccount.name }}
 {{- end }}
 {{- end }}
+
+{{- define "defaultEnvVars" -}}
+{{- $envVars := list -}}
+
+{{- $envVars = append $envVars (dict
+    "name" "SERVER_CONTEXT_PATH"
+    "value" "/operate"
+) -}}
+{{- $envVars -}}
+{{- end -}}
+
+{{- define "mergeEnvVars" -}}
+{{- $defaultEnvBlock := .defaultEnvBlock | default "" -}}
+{{- $userEnv := .userEnv | default list -}}
+{{- $context := .context -}}
+
+{{/* Shortcut: if no user env, just return default block as-is */}}
+{{- if and $defaultEnvBlock (or (not $userEnv) (eq (len $userEnv) 0)) -}}
+{{- $defaultEnvBlock -}}
+{{- else if and $defaultEnvBlock $userEnv -}}
+
+{{/* Parse default env vars from YAML string */}}
+{{- $defaultEnv := $defaultEnvBlock | fromYamlArray | default list -}}
+{{- if not (kindIs "slice" $defaultEnv) -}}
+  {{- $defaultEnv = list $defaultEnv -}}
+{{- end -}}
+
+{{/* Process user env - already a list from values */}}
+{{- $processedUserEnv := $userEnv -}}
+
+{{/* Create a map to track env vars by name (preserves order for defaults, overrides with user values) */}}
+{{- $envMap := dict -}}
+{{- $envOrder := list -}}
+
+{{/* Add default env vars to map and track order */}}
+{{- range $defaultEnv -}}
+  {{- if and (kindIs "map" .) .name -}}
+    {{- $_ := set $envMap .name . -}}
+    {{- $envOrder = append $envOrder .name -}}
+  {{- end -}}
+{{- end -}}
+
+{{/* Override with user env vars (user values take priority) and track new vars */}}
+{{- range $processedUserEnv -}}
+  {{- if and (kindIs "map" .) .name -}}
+    {{- if not (hasKey $envMap .name) -}}
+      {{- /* New env var from user - add to order */ -}}
+      {{- $envOrder = append $envOrder .name -}}
+    {{- end -}}
+    {{- $_ := set $envMap .name . -}}
+  {{- end -}}
+{{- end -}}
+
+{{/* Convert map back to list in original order and output as YAML */}}
+{{- $mergedEnv := list -}}
+{{- range $envOrder -}}
+  {{- if hasKey $envMap . -}}
+    {{- $mergedEnv = append $mergedEnv (index $envMap .) -}}
+  {{- end -}}
+{{- end -}}
+
+{{- toYaml $mergedEnv -}}
+{{- end -}}
+{{- end -}}

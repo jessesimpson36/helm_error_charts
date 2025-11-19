@@ -41,11 +41,11 @@ spec:
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           env:
-            - name: SERVER_CONTEXT_PATH
-              value: "/operate"
-          {{- with .Values.env }}
-          {{- toYaml . | nindent 12 }}
-          {{- end }}
+            {{- include "mergeEnvVars" (dict
+                "defaultEnvBlock" (include "defaultEnvVars" .)
+                "userEnv" .Values.env
+                "context" .
+            ) | nindent 12 }}
           ports:
             - name: http
               containerPort: {{ .Values.service.port }}
